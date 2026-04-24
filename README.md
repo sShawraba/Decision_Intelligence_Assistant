@@ -125,73 +125,6 @@ decision-intelligence-assistant/
 
 3. **Access**: http://localhost:5173
 
-## API Endpoints
-
-### POST `/api/ask`
-Ask a question and get RAG-powered answers.
-
-**Request**:
-```json
-{
-  "query": "What are the main features?"
-}
-```
-
-**Response**:
-```json
-{
-  "query": "What are the main features?",
-  "rag_answer": "Based on the retrieved documents...",
-  "non_rag_answer": "The main features include...",
-  "retrieved_documents": [
-    {
-      "content": "Document text...",
-      "similarity_score": 0.95
-    }
-  ],
-  "latency_ms": 234.5
-}
-```
-
-### POST `/api/predict`
-ML model prediction for classification/priority.
-
-**Request**:
-```json
-{
-  "text": "User input text"
-}
-```
-
-**Response**:
-```json
-{
-  "label": "HIGH",
-  "confidence": 0.87,
-  "latency_ms": 12.3
-}
-```
-
-### POST `/api/llm-priority`
-Zero-shot LLM-based priority prediction.
-
-**Request**:
-```json
-{
-  "text": "User input text"
-}
-```
-
-**Response**:
-```json
-{
-  "priority": "HIGH",
-  "reasoning": "This seems urgent because...",
-  "latency_ms": 456.2,
-  "cost_usd": 0.000234
-}
-```
-
 ## Configuration
 
 ### Environment Variables
@@ -207,38 +140,6 @@ MODEL_NAME=gpt-3.5-turbo          # OpenAI model (default: gpt-3.5-turbo)
 CHROMA_PATH=./chroma_data         # Chroma storage path
 MODEL_PATH=./model.pkl            # Path to your trained model
 LOGS_PATH=./logs                  # Query logs path
-```
-
-## Adding Training Data to Chroma
-
-To populate the vector store with documents, create a simple script:
-
-```python
-from app.services.chroma_service import chroma_service
-
-documents = [
-    "Your document 1 content...",
-    "Your document 2 content...",
-    # ... more documents
-]
-
-chroma_service.add_documents(documents)
-```
-
-## Training an ML Model
-
-The backend expects a scikit-learn model saved as `model.pkl`:
-
-```python
-from sklearn.ensemble import RandomForestClassifier
-import pickle
-
-# Train your model
-model = RandomForestClassifier()
-model.fit(X_train, y_train)
-
-# Save it
-pickle.dump(model, open('model.pkl', 'wb'))
 ```
 
 ## Logging & Monitoring
