@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  # Backend API service
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MODEL_NAME=${MODEL_NAME:-gpt-3.5-turbo}
+      - CHROMA_PATH=/app/chroma_data
+      - MODEL_PATH=/app/model.pkl
+      - LOGS_PATH=/app/logs
+    volumes:
+      - chroma_data:/app/chroma_data
+      - logs:/app/logs
+      - ./backend/model.pkl:/app/model.pkl:ro  # Mount your trained model
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Frontend service
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:8000
+    networks:
+      - app-network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+# Persistent volumes
+volumes:
+  chroma_data:
+  logs:
+
+# Shared network
+networks:
+  app-network:
+    driver: bridge

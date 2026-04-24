@@ -1,0 +1,25 @@
+[project]
+name = "decision-intelligence-assistant"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=1.5.8",
+    "fastapi>=0.136.1",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "numpy>=2.4.4",
+    "openai>=2.32.0",
+    "pandas>=3.0.2",
+    "python-dotenv>=1.2.2",
+    "tiktoken>=0.12.0",
+    "uvicorn>=0.46.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+    "pytest>=9.0.3",
+    "ruff>=0.15.11",
+]
