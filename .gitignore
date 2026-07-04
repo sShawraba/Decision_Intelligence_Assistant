@@ -47,10 +47,11 @@ yarn-error.log*
 dist/
 
 # Application data
-model.pkl
+*.pkl
 logs/
 chroma_data/
 *.jsonl
+*.csv
 
 # Docker
 .dockerignore

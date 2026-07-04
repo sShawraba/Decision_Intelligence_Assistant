@@ -1,6 +1,8 @@
 """Chroma vector store service for RAG"""
 import chromadb
 from app.utils.config import CHROMA_PATH, TOP_K
+#from app.services.embedding_service import get_embedding #coupled to openai
+
 
 
 class ChromaService:
@@ -19,32 +21,32 @@ class ChromaService:
         )
 
     def add_documents(self, documents: list[str], ids: list[str] = None):
-        """
-        Add documents to the Chroma collection.
-        
-        Args:
-            documents: List of document texts to add
-            ids: List of document IDs (optional, auto-generated if not provided)
-        """
+
         if ids is None:
             ids = [str(i) for i in range(len(documents))]
-        
-        self.collection.add(
+
+        # embeddings = [get_embedding(doc) for doc in documents]
+
+        # self.collection.add(
+        #     documents=documents,
+        #     embeddings=embeddings,
+        #     ids=ids
+        # )
+
+        self.collection.add( 
             documents=documents,
             ids=ids
-        )
+        )   #chromadb handles embeddings to work on gemini
 
-    def search(self, query: str, k: int = TOP_K) -> list[dict]:
-        """
-        Search for similar documents using semantic similarity.
+    def search(self, query: str, k: int = TOP_K):
+
+        # query_embedding = get_embedding(query)
+
+        # results = self.collection.query(
+        #     query_embeddings=[query_embedding],
+        #     n_results=k
+        # )
         
-        Args:
-            query: Search query text
-            k: Number of top results to return
-            
-        Returns:
-            List of dictionaries with 'content' and 'similarity_score'
-        """
         results = self.collection.query(
             query_texts=[query],
             n_results=k

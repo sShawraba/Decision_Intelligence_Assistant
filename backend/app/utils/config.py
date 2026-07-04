@@ -1,15 +1,19 @@
 """Configuration management"""
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # API Keys
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 CHROMA_PATH = os.getenv("CHROMA_PATH", str(BASE_DIR / "chroma_data"))
-MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "model.pkl"))
+MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "app/models/tfidf_model.pkl"))
 LOGS_PATH = os.getenv("LOGS_PATH", str(BASE_DIR / "logs"))
 
 # Create logs directory if it doesn't exist

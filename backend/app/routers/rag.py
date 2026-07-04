@@ -23,14 +23,14 @@ async def ask(request: AskRequest):
     query = request.query
     
     # Retrieve similar documents from Chroma
-    retrieved = chroma_service.search(query, k=3)
+    retrieved = chroma_service.search(query, k=5)
     retrieved_documents = [
         RetrievedDocument(**doc) for doc in retrieved
     ]
     
     # Build context from retrieved documents
     context = "\n\n".join([
-        f"Document {i+1} (similarity: {doc.similarity_score}):\n{doc.content}"
+        f"[Ticket {i+1}] {doc.content}"
         for i, doc in enumerate(retrieved_documents)
     ])
     
@@ -38,11 +38,13 @@ async def ask(request: AskRequest):
     rag_result = llm_service.ask_with_context(query, context)
     rag_answer = rag_result['answer']
     rag_cost = rag_result['cost']
+    rag_provider = rag_result['provider'] 
     
     # Get non-RAG answer (without context)
     non_rag_result = llm_service.ask_without_context(query)
     non_rag_answer = non_rag_result['answer']
     non_rag_cost = non_rag_result['cost']
+    non_rag_provider = non_rag_result['provider'] 
     
     # Calculate latency
     latency_ms = (time.time() - start_time) * 1000
@@ -64,6 +66,8 @@ async def ask(request: AskRequest):
         query=query,
         rag_answer=rag_answer,
         non_rag_answer=non_rag_answer,
+        rag_provider=rag_provider,               
+        non_rag_provider=non_rag_provider,      
         retrieved_documents=retrieved_documents,
         latency_ms=round(latency_ms, 2)
     )

@@ -22,6 +22,8 @@ class AskResponse(BaseModel):
     non_rag_answer: str  # Direct LLM answer without context
     retrieved_documents: List[RetrievedDocument]
     latency_ms: float
+    rag_provider: str
+    non_rag_provider: str
 
 
 # ===== ML Endpoint =====

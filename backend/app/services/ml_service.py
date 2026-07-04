@@ -1,77 +1,72 @@
-"""ML model service for loading and using sklearn classifier"""
 import pickle
 from pathlib import Path
 from app.utils.config import MODEL_PATH
-from app.services.feature_extraction import extract_features
+from textblob import TextBlob
+import re
 
+def clean_text(text):
+    # remove mentions but keep sentence structure
+    text = re.sub(r'@\w+', ' ', text)
+    
+    # remove URLs
+    text = re.sub(r'http\S+|www\S+', ' ', text)
+    
+    # keep letters (upper + lower), numbers, and basic punctuation
+    text = re.sub(r'[^a-zA-Z0-9\s!?.,]', '', text)
+    
+    # normalize spaces
+    text = re.sub(r'\s+', ' ', text).strip()
+    
+    return text
 
 class MLService:
-    """Service for loading and using trained ML models"""
-
     def __init__(self):
-        """Load the pretrained model"""
-        self.model = None
+        self.model_bundle = None
         self.load_model()
 
     def load_model(self):
-        """Load the sklearn model from disk"""
         model_file = Path(MODEL_PATH)
-        
+
         if not model_file.exists():
-            print(f"Warning: Model file not found at {MODEL_PATH}")
-            print("Create a trained model and save it with pickle:")
-            print("  import pickle")
-            print("  pickle.dump(model, open('model.pkl', 'wb'))")
-            return False
-        
-        try:
-            with open(model_file, 'rb') as f:
-                self.model = pickle.load(f)
-            print(f"Model loaded from {MODEL_PATH}")
-            return True
-        except Exception as e:
-            print(f"Error loading model: {e}")
+            print("Model file not found")
             return False
 
+        with open(model_file, "rb") as f:
+            self.model_bundle = pickle.load(f)
+
+        print("TF-IDF model loaded successfully")
+        return True
+
     def predict(self, text: str) -> dict:
-        """
-        Make a prediction using the trained model.
-        
-        Args:
-            text: Input text to classify
-            
-        Returns:
-            Dictionary with 'label' and 'confidence'
-        """
-        if self.model is None:
+        if self.model_bundle is None:
             return {
-                "label": "UNKNOWN",
+                "label": "ERROR",
                 "confidence": 0.0,
                 "error": "Model not loaded"
             }
-        
+
         try:
-            # Extract features from input text
-            features = extract_features(text)
-            features_array = [features]  # Model expects 2D array
-            
-            # Make prediction
-            prediction = self.model.predict(features_array)[0]
-            
-            # Get confidence (probability of predicted class)
-            # This works if model has predict_proba method (e.g., LogisticRegression, RandomForest)
-            if hasattr(self.model, 'predict_proba'):
-                probabilities = self.model.predict_proba(features_array)[0]
-                confidence = max(probabilities)
+            vectorizer = self.model_bundle["vectorizer"]
+            model = self.model_bundle["model"]
+
+            # 🔥 KEY CHANGE: TF-IDF transform
+            processed = clean_text(text)
+            X = vectorizer.transform([text])
+
+            prediction = model.predict(X)[0]
+
+            if hasattr(model, "predict_proba"):
+                probs = model.predict_proba(X)[0]
+                confidence = float(max(probs))
             else:
-                confidence = 1.0  # Fallback for models without predict_proba
-            
+                confidence = 1.0
+
             return {
-                "label": str(prediction),
-                "confidence": round(float(confidence), 3)
+                "label": "urgent" if prediction == model.classes_[1] else "normal",
+                "confidence": round(confidence, 3)
             }
+
         except Exception as e:
-            print(f"Error making prediction: {e}")
             return {
                 "label": "ERROR",
                 "confidence": 0.0,
@@ -79,5 +74,4 @@ class MLService:
             }
 
 
-# Global instance
 ml_service = MLService()
